@@ -1,9 +1,54 @@
+import { useState } from "react";
+import axios from "axios"
+import { useNavigate } from "react-router-dom";
+
 
 const Register = () => {
+  const navigate = useNavigate()
+  const [error, setError] = useState("")
+
+  let handleSubmit = async (e) => {
+      e.preventDefault();
+      
+      const fullName = e.target.fullName.value
+      const email = e.target.email.value
+      const password = e.target.password.value
+      const confirmPassword = e.target.confirmPassword.value
+
+      console.log("Form data:", { fullName, email, password, confirmPassword });
+
+      if(password !== confirmPassword){
+           setError("Passwords do not match!")
+           return 
+      }
+
+      setError("")
+
+      try {
+        const backendUrl = import.meta.env.VITE_BACKEND_URL;
+        console.log("Backend URL:", backendUrl);
+        console.log("Full request URL:", `${backendUrl}/api/register`);
+
+        const res = await axios.post(`${backendUrl}/api/register` , {fullName, email, password}, {withCredentials: true})
+
+        console.log("success : ", res.data);
+
+        e.target.reset()
+        navigate("/");
+        
+      } catch (error) {
+         console.error("❌ Error caught:", error);
+        console.error("Error response:", error.response);
+        console.error("Error message:", error.message);
+        setError(error.response?.data?.message || "Something went wrong")
+      }
+      
+  }
+
   return (
     <div className="register text-white w-full min-h-screen flex justify-center items-center select-none">
-      
-      <form action="" className="rounded-md w-100 h-auto p-3 border">
+
+      <form onSubmit={(e) => handleSubmit(e)} className="rounded-md w-100 h-auto p-3 border">
         <div>
             <h1 className="text-2xl tracking-tighter">Create Account</h1>
             <h1 className="my-1 mb-3 tracking-tight text-gray-300">Enter your details to create your account</h1>
@@ -11,23 +56,32 @@ const Register = () => {
 
         <div className="my-2">
             <label htmlFor="">FullName</label>
-            <input type="text"className="w-full rounded-md outline-0 border px-2 py-1" placeholder="John bhai" />
+            <input name="fullName" type="text"className="w-full rounded-md outline-0 border px-2 py-1" placeholder="John bhai" />
         </div>
 
         <div className="my-2">
             <label htmlFor="">Email</label>
-            <input type="email"className="w-full rounded-md outline-0 border px-2 py-1" placeholder="example@gmail.com"/>
+            <input name="email" type="email"className="w-full rounded-md outline-0 border px-2 py-1" placeholder="example@gmail.com"/>
         </div>
 
         <div className="my-2">
             <label htmlFor="">Password</label>
-            <input type="password"className="w-full rounded-md outline-0 border px-2 py-1" placeholder="•••••••••" />
+            <input name="password" type="password"className="w-full rounded-md outline-0 border px-2 py-1" placeholder="•••••••••" />
         </div>
 
         <div className="my-2">
             <label htmlFor="">Confirm Password</label>
-            <input type="password"className="w-full rounded-md outline-0 border px-2 py-1" placeholder="•••••••••"/>
+            <input name="confirmPassword" type="password"className="w-full rounded-md outline-0 border px-2 py-1" placeholder="•••••••••"/>
         </div>
+
+        {
+          error ? 
+          <p className="text-red-400 mb-2 text-sm">
+            {error}
+          </p> 
+          :
+          null
+        }
 
         <button type="submit" className="w-full border rounded-md mt-5 text-[18px] cursor-pointer py-2 active:scale-[0.9] duration-200">Create Account</button>
 
