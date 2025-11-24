@@ -25,7 +25,7 @@ const Login = () => {
         <button type="submit" className="w-full border rounded-md mt-5 text-[18px] cursor-pointer py-2 active:scale-[0.9] duration-200">Login Account</button>
 
         <div className="my-2 mt-3 flex justify-center ">
-            <a href="/register" className="cursor-pointer ">Don't have an account ? Register</a>
+            <a href="/" className="cursor-pointer ">Don't have an account ? Register</a>
         </div>
 
       </form>
