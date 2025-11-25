@@ -26,7 +26,7 @@ const userSchema = mongoose.Schema(
         },
         avatar: {
             type: String,
-            required: true
+            // required: true
         },
         refreshToken: {
             type: String
@@ -35,14 +35,9 @@ const userSchema = mongoose.Schema(
     }, {timestamps: true} //for created at & updated at
 )
 
-userSchema.pre("save" , async function (next) {
-    if(!this.isModified("password")) {
-        return next()
-    }
-    else{
-        this.password = await bcrypt.hash(this.password, 10)
-        next()
-    }
+userSchema.pre("save" , async function () {
+    if(!this.isModified("password")) return 
+     this.password = await bcrypt.hash(this.password, 10)
 })
 
 userSchema.methods.isPasswordCorrect = async function(password){

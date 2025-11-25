@@ -17,12 +17,27 @@ const Register = () => {
 
       console.log("Form data:", { fullName, email, password, confirmPassword });
 
+      //validation
+
+      if(!fullName || !email || !password || !confirmPassword){
+        setError("All fields are required")
+        return
+      }
+
+      if(password.length < 6){
+        setError("Password must be at least 6 characters long!")
+        return
+      }
+
       if(password !== confirmPassword){
            setError("Passwords do not match!")
            return 
       }
 
       setError("")
+      
+      //validation
+
 
       try {
         const backendUrl = import.meta.env.VITE_BACKEND_URL;
@@ -37,10 +52,7 @@ const Register = () => {
         navigate("/");
         
       } catch (error) {
-         console.error("❌ Error caught:", error);
-        console.error("Error response:", error.response);
-        console.error("Error message:", error.message);
-        setError(error.response?.data?.message || "Something went wrong")
+        setError(error.response?.data?.message || "Registration failed")
       }
       
   }
