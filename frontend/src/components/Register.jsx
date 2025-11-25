@@ -1,6 +1,7 @@
 import { useState } from "react";
 import axios from "axios"
 import { useNavigate } from "react-router-dom";
+import backendUrl from "./BackendUrl";
 
 
 const Register = () => {
@@ -40,13 +41,11 @@ const Register = () => {
 
 
       try {
-        const backendUrl = import.meta.env.VITE_BACKEND_URL;
-        console.log("Backend URL:", backendUrl);
-        console.log("Full request URL:", `${backendUrl}/api/register`);
+        
 
         const res = await axios.post(`${backendUrl}/api/register` , {fullName, email, password}, {withCredentials: true})
 
-        console.log("success : ", res.data);
+        console.log("response : ", res.data);
 
         e.target.reset()
         navigate("/");
