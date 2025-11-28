@@ -5,6 +5,8 @@ import ForgotPassword from "./components/ForgotPassword"
 import VerifyOtp from "./components/VerifyOtp"
 import Dashboard from "./components/Dashboard"
 import Profile from "./components/Profile"
+import ProtectedRoutes from "./components/ProtectedRoutes"
+import Logout from "./components/Logout"
 
 
 const App = () => {
@@ -14,10 +16,16 @@ const App = () => {
       <Route path="/login" element={<Login/>}></Route>
       <Route path="/forgot-password" element={<ForgotPassword/>}></Route>
       <Route path="/verify-otp" element={<VerifyOtp/>}></Route>
-      <Route path="/dashboard" element={<Dashboard/>}></Route>
-      <Route path="/profile" element={<Profile/>}></Route>
+      <Route path="/logout" element={<Logout/>}></Route>
+      
+      //protected routes #only accessible when logged in
+      <Route path="/profile" element={<ProtectedRoutes requiredRole={["admin","moderator"]}><Profile/></ProtectedRoutes>}></Route>
+      <Route path="/dashboard" element={<ProtectedRoutes requiredRole={["admin","moderator"]}><Dashboard/></ProtectedRoutes>}></Route>
+      //protected routes 
+
+      <Route path="/unauthorized" element={<div>⛔ Access Denied - Only admin/moderator can access</div>}></Route>
     </Routes>
   )
-}
+}     
 
 export default App

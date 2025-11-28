@@ -1,10 +1,11 @@
 import axios from "axios"
 import { useState } from "react"
 import backendUrl from "./BackendUrl"
+import { useNavigate } from "react-router-dom"
 
 const Login = () => {
-
-  const [error, setError] = useState("")
+  let navigate = useNavigate()
+  const [showMsg, setShowMsg] = useState("")
 
   let handleSubmit = async (e) => {
     e.preventDefault()
@@ -12,19 +13,19 @@ const Login = () => {
     const email = e.target.email.value
     const password = e.target.password.value
 
-    //validation
+    // validation
 
     if(!email || !password){
-      setError("Email & Password is required")
+      setShowMsg("Email & Password is required")
       return
     }
 
     if(password.length < 6){
-      setError("Password must be at least 6 characters long!")
+      setShowMsg("Password must be at least 6 characters long!")
       return
     }
 
-    setError("")
+    setShowMsg("")
 
     //validation
 
@@ -32,11 +33,24 @@ const Login = () => {
       const res = await axios.post(`${backendUrl}/api/login`, {email, password} , {withCredentials: true})
       console.log("response : ", res);
 
+      setShowMsg(res.data.message)
+
       e.target.reset()
+
+      //role based navigation
+      if(res.data.data.user.roles === "admin" || "moderator"){
+         navigate("/dashboard")
+      }
+      if(res.data.data.user.roles === "user"){
+        alert("user logged in successfully")
+        navigate("/login")
+      }
 
       
     } catch (error) {
-      setError(error.response?.data?.message || "Login Failed")
+      console.log(error);
+      
+      setShowMsg(error.response?.data?.message || "Login failed")
     }
   }
 
@@ -63,9 +77,9 @@ const Login = () => {
         </div>
 
          {
-          error ? 
-          <p className="text-red-400 mb-2 text-sm">
-            {error}
+          showMsg ? 
+          <p className="text-yellow-300 mb-2 text-sm">
+            {showMsg}
           </p> 
           :
           null

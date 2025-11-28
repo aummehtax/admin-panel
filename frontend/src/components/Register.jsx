@@ -6,7 +6,7 @@ import backendUrl from "./BackendUrl";
 
 const Register = () => {
   const navigate = useNavigate()
-  const [error, setError] = useState("")
+  const [showMsg, setShowMsg] = useState("")
 
   let handleSubmit = async (e) => {
       e.preventDefault();
@@ -16,26 +16,26 @@ const Register = () => {
       const password = e.target.password.value
       const confirmPassword = e.target.confirmPassword.value
 
-      console.log("Form data:", { fullName, email, password, confirmPassword });
+      // console.log("Form data:", { fullName, email, password, confirmPassword });
 
       //validation
 
       if(!fullName || !email || !password || !confirmPassword){
-        setError("All fields are required")
+        setShowMsg("All fields are required")
         return
       }
 
       if(password.length < 6){
-        setError("Password must be at least 6 characters long!")
+        setShowMsg("Password must be at least 6 characters long!")
         return
       }
 
       if(password !== confirmPassword){
-           setError("Passwords do not match!")
+           setShowMsg("Passwords do not match!")
            return 
       }
 
-      setError("")
+      setShowMsg("")
       
       //validation
 
@@ -47,11 +47,13 @@ const Register = () => {
 
         console.log("response : ", res.data);
 
+        setShowMsg("user registered successfully")
+
         e.target.reset()
         navigate("/");
         
       } catch (error) {
-        setError(error.response?.data?.message || "Registration failed")
+        setShowMsg(error.response?.data?.message || "Registration failed")
       }
       
   }
@@ -86,9 +88,9 @@ const Register = () => {
         </div>
 
         {
-          error ? 
-          <p className="text-red-400 mb-2 text-sm">
-            {error}
+          showMsg ? 
+          <p className="text-yellow-300 mb-2 text-sm">
+            {showMsg}
           </p> 
           :
           null
