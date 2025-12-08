@@ -7,6 +7,7 @@ import Dashboard from "./components/Dashboard"
 import Profile from "./components/Profile"
 import ProtectedRoutes from "./components/ProtectedRoutes"
 import Logout from "./components/Logout"
+import ResetPassword from "./components/ResetPassword"
 
 
 const App = () => {
@@ -17,6 +18,7 @@ const App = () => {
       <Route path="/forgot-password" element={<ForgotPassword/>}></Route>
       <Route path="/verify-otp" element={<VerifyOtp/>}></Route>
       <Route path="/logout" element={<Logout/>}></Route>
+      <Route path="/reset-password" element={<ResetPassword/>}></Route>
       
       //protected routes #only accessible when logged in
       <Route path="/profile" element={<ProtectedRoutes requiredRole={["admin","moderator"]}><Profile/></ProtectedRoutes>}></Route>
