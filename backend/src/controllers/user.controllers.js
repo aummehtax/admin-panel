@@ -25,8 +25,6 @@ const generateRefreshAndAccessToken =  async (userID) => {
 
 
 const registerUser = asyncHandler( async (req , res) => {
-    // console.log(req.body);
-
     const {fullName, email, password} = req.body
     
     if([fullName, email, password].some( (e) => e.trim() == "" ) ){
@@ -91,7 +89,7 @@ const loginUser = asyncHandler( async (req , res) => {
 
     const loggedInUser = await user.findById(userExist._id).select("-password -refreshToken")
 
-    console.log(loggedInUser);
+    // console.log(loggedInUser);
 
     return res
     .status(200)
@@ -150,4 +148,22 @@ const currentUser = asyncHandler( async (req, res) => {
     )
 })
 
-export {registerUser, loginUser, logoutUser, currentUser}
+const dashboardData = asyncHandler( async(req, res) => {
+    const allUser = await user.find().select("-password -refreshToken")
+    
+    if(!allUser){
+        throw new apiError(400, "users not found")
+    } 
+
+    return res
+    .status(200)
+    .json(
+        new apiResponse(
+            200,
+            {allUser},
+            "successfully fetched"
+        )
+    )
+})
+
+export {registerUser, loginUser, logoutUser, currentUser, dashboardData}
