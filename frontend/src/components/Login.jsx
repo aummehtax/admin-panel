@@ -31,7 +31,6 @@ const Login = () => {
 
     try {
       const res = await axios.post(`${backendUrl}/api/login`, {email, password} , {withCredentials: true})
-      console.log("response : ", res);
 
       setShowMsg(res.data.message)
 

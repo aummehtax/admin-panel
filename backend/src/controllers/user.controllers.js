@@ -149,6 +149,7 @@ const currentUser = asyncHandler( async (req, res) => {
 })
 
 const dashboardData = asyncHandler( async(req, res) => {
+
     const allUser = await user.find().select("-password -refreshToken")
     
     if(!allUser){
@@ -160,10 +161,81 @@ const dashboardData = asyncHandler( async(req, res) => {
     .json(
         new apiResponse(
             200,
-            {allUser},
+            {allUser , userIdPanel : req.user._id},
             "successfully fetched"
         )
     )
 })
 
-export {registerUser, loginUser, logoutUser, currentUser, dashboardData}
+const editUser = asyncHandler( async(req, res) => {
+
+    const {editRoles} = req.body
+    const {userId} = req.params
+
+    // console.log("userId : ", userId, editRoles);
+    
+    if(req.user.roles !== "admin"){
+     throw new apiError(400, "Only admins can edit user roles")
+    } 
+
+   const USER = await user.findById(userId)
+
+   if(!USER){
+    throw new apiError(404, "user not found")
+   }
+
+   USER.roles = editRoles
+   await USER.save()
+
+   const allUser = await user.find().select("-password -refreshToken")
+
+   if(!allUser){
+    throw new apiError(400, "users not found");
+    
+   }
+
+   return res
+   .status(200)
+   .json(
+    new apiResponse(
+        200,
+        {allUser},
+        "updated successfully"
+    )
+   )
+ 
+})
+
+const deleteUser = asyncHandler( async(req, res) => {
+    const {userId} = req.params
+    const userExist = await user.findById(userId)
+
+    if(!userExist){
+        throw new apiError(404, "user not found")
+    }
+
+    if(userExist.roles === "admin"){
+        throw new apiError(404 , "Cannot delete admin users")
+    }
+
+    if(userExist._id.toString() === req.user._id.toString()){
+        throw new apiError(404 , "Cannot delete your own account")
+    }
+
+    await userExist.deleteOne()
+
+    const allUser = await user.find().select("-password -refreshToken")
+
+    return res
+    .status(200)
+    .json(
+        new apiResponse(
+            200,
+            {allUser},
+            "user deleted successfully"
+
+        )
+    )
+})
+
+export {registerUser, loginUser, logoutUser, currentUser, dashboardData, editUser, deleteUser}

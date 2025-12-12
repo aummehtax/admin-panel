@@ -14,16 +14,21 @@ const Dashboard = () => {
   const [response, setResponse] = useState([])
   const [adminCount, setAdminCount] = useState(0)
   const [totalUser , setTotalUser] = useState(0)
+  const [editingUserId , setEditingUserId] = useState(null)
+  const [editRoles , setEditRoles] = useState("")
+  const [adminPanelCurrentUserId , setAdminPanelCurrentUserId] = useState(null)
   
   useEffect(() => {
    const fetchDashboardData = async() => {
       try {
         const res = await axios.get(`${backendUrl}/api/dashboard`,{withCredentials: true})
+        // console.log(res);
+        setAdminPanelCurrentUserId(res.data.data.userIdPanel)
         setResponse(res.data.data.allUser)
         setShowMsg(res.data.message)
 
       } catch (error) {
-        setShowMsg(error.response?.data?.message || "invalid")
+        setShowMsg(error.response?.data?.message || "something went wrong")
       }
    }
 
@@ -48,6 +53,49 @@ const Dashboard = () => {
 
     return matchesRoles && matchesSearch
   })
+
+
+  //handling edit & delete
+
+  let handleEdit = (id) => {
+    const adminUser = response.find(user => user._id === adminPanelCurrentUserId)
+    if(adminUser.roles !== "admin"){
+      setShowMsg("Only admins can edit user roles")
+      return
+    }
+
+    const user = response.find(user => user._id === id)
+    setEditingUserId(id)
+    setEditRoles(user.roles)
+  }
+
+  let handleCheck = async () => {
+      try {
+        const resEdit = await axios.patch(`${backendUrl}/api/dashboard/edit/${editingUserId}`, {editRoles},  {withCredentials: true})
+        
+        setResponse(resEdit.data.data.allUser)
+        setEditingUserId(null)
+        setShowMsg(resEdit.data.message)
+        
+
+      } catch (error) {
+        setShowMsg(error.response?.data?.message || "something went wrong")
+      }
+  }
+
+  let handleDelete = async (id) => {
+      try {
+        const resDelete = await axios.delete(`${backendUrl}/api/dashboard/delete/${id}`, {withCredentials: true})
+        console.log("resDelete : " , resDelete);
+        
+        setResponse(resDelete.data.data.allUser)
+        setShowMsg(resDelete.data.message)
+        
+
+      } catch (error) {
+        setShowMsg(error.response?.data?.message || "something went wrong")
+      }
+  }
 
 
   return (
@@ -134,20 +182,46 @@ const Dashboard = () => {
                     filterUsers && filterUsers.length > 0 ? 
                     filterUsers.map((element, index) => (
                       <div key={element._id || index} className="flex justify-between border-b rounded-b-md p-3 hover:bg-[#9492df8f]">
-                        <div className="w-[150px]">{element.fullName}</div>
-                        <div className="w-[250px]">{element.email}</div>
-                        <div className="w-[120px]">{element.roles}</div>
+                        {
+                          editingUserId === element._id ?
+                          <>
+                            <div className="w-[150px]">{element.fullName}</div>
+                            <div className="w-[250px]">{element.email}</div>
+                            <select name="" id="" value={editRoles} onChange={(e) => setEditRoles(e.target.value)} className="bg-[#9698eb] rounded-md outline-0 px-3 ">
+                              <option value="admin">admin</option>
+                              <option value="moderator">moderator</option>
+                              <option value="user">user</option>
+                            </select>
+                          </>
+                          :
+                          <>
+                            <div className="w-[150px]">{element.fullName}</div>
+                            <div className="w-[250px]">{element.email}</div>
+                            <div className="w-[120px]">{element.roles}</div>
+                          </>
+
+                        }
+
                         <div className="w-[150px]">
                           {new Date(element.createdAt).toLocaleDateString('en-GB')}
                         </div>
                         <div className="w-[150px] flex gap-6">
-                          <div className="cursor-pointer">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-square-pen">
+                          <div onClick={() => handleEdit(element._id)} className="cursor-pointer flex gap-3 items-center">
+
+                            {
+                              editingUserId === element._id ?
+                               <div onClick={handleCheck} className="check">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38bdff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-check-icon lucide-square-check"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="m9 12 2 2 4-4"/></svg>
+                               </div>
+                              :
+                              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-square-pen">
                               <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                               <path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"/>
-                            </svg>
+                            </svg>    
+                            }
+
                           </div>
-                          <div className="cursor-pointer">
+                          <div onClick={() => handleDelete(element._id)} className="cursor-pointer">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash">
                               <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
                               <path d="M3 6h18"/>
@@ -162,9 +236,6 @@ const Dashboard = () => {
                   }
             </div>
             
-
-         
-
         </div>
 
         {

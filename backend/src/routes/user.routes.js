@@ -1,5 +1,5 @@
 import { Router } from "express"; // Express Router → helps organize routes into separate files/modules for cleaner, modular code
-import { currentUser, dashboardData, loginUser, logoutUser, registerUser } from "../controllers/user.controllers.js";
+import { currentUser, dashboardData, deleteUser, editUser, loginUser, logoutUser, registerUser } from "../controllers/user.controllers.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 import { verifyRole } from "../middlewares/verifyRole.js";
 import { otpVerify, resetPassword, sendMail } from "../controllers/sendMail.controllers.js";
@@ -16,6 +16,8 @@ router.route("/reset-password").post(resetPassword)
 router.route("/logout").post(verifyJWT, logoutUser)
 router.route("/current-user").get(verifyJWT, currentUser)
 router.route("/dashboard").get(verifyJWT, verifyRole("admin" , "moderator"), dashboardData)
+router.route("/dashboard/edit/:userId").patch(verifyJWT, verifyRole("admin" , "moderator"), editUser)
+router.route("/dashboard/delete/:userId").delete(verifyJWT, verifyRole("admin" , "moderator"), deleteUser)
 
 
 export default router;
