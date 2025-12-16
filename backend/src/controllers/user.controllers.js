@@ -233,9 +233,103 @@ const deleteUser = asyncHandler( async(req, res) => {
             200,
             {allUser},
             "user deleted successfully"
+        )
+    )
+})
+
+const profile = asyncHandler( async(req, res) => {
+
+    const userId = req.user._id.toString()
+
+    if(!userId){
+        throw new apiError(400 , "something went wrong")
+    }
+
+    const existingUser = await user.findById(userId).select("-password -refreshToken")
+
+    if(!existingUser){
+        throw new apiError(404, "user not found")
+    }
+
+    return res
+    .status(200)
+    .json(
+        new apiResponse(
+            200,
+            existingUser,
+            "profile fetched successfully"
 
         )
     )
 })
 
-export {registerUser, loginUser, logoutUser, currentUser, dashboardData, editUser, deleteUser}
+const profileUpdate = asyncHandler( async(req, res) => {
+
+    const {cloudinaryUrl, inputFullname, inputEmail} = req.body
+    const userId = req.user._id
+
+    console.log(req.body);
+    
+
+    if(!cloudinaryUrl || !inputFullname || !inputEmail){
+        throw new apiError(400, "something went wrong")
+    }
+
+    const existingUser = await user.findById(userId)
+
+    if(!existingUser){
+        throw new apiError(404, "user not found")
+    }
+
+    existingUser.fullName = inputFullname
+    existingUser.email = inputEmail
+    existingUser.avatar = cloudinaryUrl
+    await existingUser.save({ validateBeforeSave: true })
+
+    return res 
+    .status(200)
+    .json(
+        new apiResponse(
+            200,
+            {},
+            "profile updated successfully"
+        )
+    )
+
+}) 
+
+const changePassword = asyncHandler( async(req, res) => {
+
+    const {newPass , currentPass} = req.body
+
+    if(!newPass || !currentPass){
+        throw new apiError(404, "something went wrong")
+    }
+
+    const existingUser = await user.findById(req.user._id)
+
+    if(!existingUser){
+        throw new apiError(404, "user not found")
+    }
+
+    const isPasswordValid = await existingUser.isPasswordCorrect(currentPass)
+
+    if(!isPasswordValid){
+        throw new apiError(400, "password is not valid")        
+    }
+
+    existingUser.password = newPass
+    await existingUser.save()
+
+    return res
+    .status(200)
+    .json(
+        new apiResponse(
+            200,
+            {},
+            "Password changed successfully"
+        )
+    )
+
+})
+export {registerUser, loginUser, logoutUser, currentUser, dashboardData, editUser, deleteUser, profile, profileUpdate, changePassword}
