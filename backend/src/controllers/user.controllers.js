@@ -91,10 +91,14 @@ const loginUser = asyncHandler( async (req , res) => {
 
     // console.log(loggedInUser);
 
+    // SET COOKIES FIRST
+    res.cookie("accessToken", accessToken, cookieOptions);
+    res.cookie("refreshToken", refreshToken, cookieOptions);
+
     return res
     .status(200)
-    .cookie("accessToken", accessToken, cookieOptions)
-    .cookie("refreshToken", refreshToken, cookieOptions)
+    // .cookie("accessToken", accessToken, cookieOptions)
+    // .cookie("refreshToken", refreshToken, cookieOptions)
     .json(
         new apiResponse(
             200,
