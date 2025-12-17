@@ -1,5 +1,6 @@
 export const cookieOptions = {
     httpOnly: true,
     secure: true,
-    sameSite: 'none' 
+    sameSite: 'none',
+    path: '/'  
 }

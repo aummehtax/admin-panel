@@ -37,7 +37,7 @@ const Login = () => {
       e.target.reset()
 
       //role based navigation
-      if(res.data.data.user.roles === "admin" || "moderator"){
+      if(res.data.data.user.roles === "admin" || res.data.data.user.roles === "moderator"){
          navigate("/dashboard")
       }
       if(res.data.data.user.roles === "user"){
