@@ -16,7 +16,7 @@ app.use(cors({
 }))
 
 // ADD THIS RIGHT AFTER CORS - Handle preflight requests
-app.options('*', cors());
+app.options('/*', cors());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
