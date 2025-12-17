@@ -13,14 +13,6 @@ app.use(cors({
   credentials: true,
 }))
 
-// ADD THIS FOR DEBUGGING (remove later in production)
-app.use((req, res, next) => {
-  console.log('📍 Request Origin:', req.headers.origin);
-  console.log('📍 Request Method:', req.method);
-  console.log('📍 CORS_ORIGIN env:', process.env.CORS_ORIGIN);
-  next();
-});
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
