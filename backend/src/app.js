@@ -8,6 +8,9 @@ import { errorHandler } from "./middlewares/errorHandler.middleware.js";
 
 const app = express();
 
+// Add AFTER cors() middleware
+app.set('trust proxy', 1); // Trust Vercel's proxy
+
 app.use(cors({
   origin: process.env.CORS_ORIGIN ,
   credentials: true,
