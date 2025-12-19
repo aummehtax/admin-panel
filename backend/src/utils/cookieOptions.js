@@ -3,5 +3,5 @@ export const cookieOptions = {
     secure: true,
     sameSite: 'none',
     path: '/',
-    domain: '.vercel.app' // Add this for Vercel
+    // domain: '.vercel.app' // Add this for Vercel
 }

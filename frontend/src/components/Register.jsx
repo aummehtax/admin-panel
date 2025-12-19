@@ -45,7 +45,7 @@ const Register = () => {
 
         const res = await axios.post(`${backendUrl}/api/register` , {fullName, email, password}, {withCredentials: true})
 
-        console.log("response : ", res.data);
+        // console.log("response : ", res.data);
 
         setShowMsg("user registered successfully")
 
@@ -54,10 +54,10 @@ const Register = () => {
         
       } catch (error) {
         setShowMsg(error.response?.data?.message || "Registration failed")
-      }
-      
+      }  
   }
 
+  
   return (
     <div className="register text-white w-full min-h-screen flex justify-center items-center select-none">
 
