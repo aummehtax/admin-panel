@@ -25,6 +25,18 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+// TEST ROUTE - Add this after cookieParser()
+app.get('/test-cookie', (req, res) => {
+  console.log('🧪 Test cookie route hit');
+  res.cookie('testCookie', 'testValue', {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'none',
+    path: '/'
+  });
+  res.json({ message: 'Test cookie set' });
+});
+
 //routes import
 import userRouter from "./routes/user.routes.js";
 
