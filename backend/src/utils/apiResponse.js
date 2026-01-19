@@ -1,13 +1,13 @@
-class apiResponse{
-    constructor(statusCode, data, message = "success"){
-        this.statusCode = statusCode
-        this.data = data
-        this.message = message
-        this.success = statusCode < 400
-    }
+class apiResponse {
+  constructor(statusCode, data, message = "success") {
+    this.statusCode = statusCode;
+    this.data = data;
+    this.message = message;
+    this.success = statusCode < 400;
+  }
 }
 
-export {apiResponse}
+export { apiResponse };
 
 // 📘 apiResponse class:
 // This class is used to send a clean and consistent response from the backend to the frontend.

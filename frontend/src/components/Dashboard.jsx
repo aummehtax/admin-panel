@@ -3,7 +3,6 @@ import axios from "axios";
 import backendUrl from "./BackendUrl";
 import { SectionCards } from "@/components/section-cards";
 import { UserDataTable } from "@/components/user-data-table";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useUser } from "@/contexts/UserContext";
 import { toast } from "sonner";
 

@@ -1,21 +1,25 @@
-class apiError extends Error{
-    constructor(statusCode, message = "something went wrong", errors = [], stack = "") {
-       super(message) //call parent constructor
-       this.statusCode = statusCode
-       this.message = message
-       this.data = null
-       this.errors = errors
+class apiError extends Error {
+  constructor(
+    statusCode,
+    message = "something went wrong",
+    errors = [],
+    stack = "",
+  ) {
+    super(message); //call parent constructor
+    this.statusCode = statusCode;
+    this.message = message;
+    this.data = null;
+    this.errors = errors;
 
-       if(stack){
-        this.stack = stack
-       }
-       else{
-        Error.captureStackTrace(this, this.constructor)
-       }
+    if (stack) {
+      this.stack = stack;
+    } else {
+      Error.captureStackTrace(this, this.constructor);
     }
+  }
 }
 
-export {apiError}
+export { apiError };
 
 // 📘 apiError class:
 // This custom class extends the built-in Error class to create more useful error messages.

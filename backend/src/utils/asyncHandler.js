@@ -1,11 +1,10 @@
 const asyncHandler = (requestHandler) => {
-    return (req, res, next) => {
-        Promise.resolve(requestHandler(req, res, next)).catch((err) => next(err))
-    }
-}
+  return (req, res, next) => {
+    Promise.resolve(requestHandler(req, res, next)).catch((err) => next(err));
+  };
+};
 
-export {asyncHandler}
-
+export { asyncHandler };
 
 // 📘 asyncHandler function:
 // This is a helper function that makes async code cleaner.
