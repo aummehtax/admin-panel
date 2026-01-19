@@ -1,99 +1,155 @@
-import axios from "axios"
-import { useState } from "react"
-import backendUrl from "./BackendUrl"
-import { useNavigate } from "react-router-dom"
+import axios from "axios";
+import { useState } from "react";
+import backendUrl from "./BackendUrl";
+import { useNavigate } from "react-router-dom";
+import { useUser } from "../contexts/UserContext";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { toast } from "sonner";
 
 const Login = () => {
-  let navigate = useNavigate()
-  const [showMsg, setShowMsg] = useState("")
+  let navigate = useNavigate();
+  const { refreshUser } = useUser();
+  const [showMsg, setShowMsg] = useState("");
 
   let handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
 
-    const email = e.target.email.value
-    const password = e.target.password.value
+    const email = e.target.email.value;
+    const password = e.target.password.value;
 
     // validation
 
-    if(!email || !password){
-      setShowMsg("Email & Password is required")
-      return
+    if (!email || !password) {
+      setShowMsg("Email & Password is required");
+      return;
     }
 
-    if(password.length < 6){
-      setShowMsg("Password must be at least 6 characters long!")
-      return
+    if (password.length < 6) {
+      setShowMsg("Password must be at least 6 characters long!");
+      return;
     }
 
-    setShowMsg("")
+    setShowMsg("");
 
     //validation
 
     try {
-      const res = await axios.post(`${backendUrl}/api/login`, {email, password} , {withCredentials: true})
+      const res = await axios.post(
+        `${backendUrl}/api/login`,
+        { email, password },
+        { withCredentials: true }
+      );
 
-      setShowMsg(res.data.message)
+      setShowMsg(res.data.message);
 
-      e.target.reset()
+      // Update user context with fresh data
+      await refreshUser();
 
-      //role based navigation
-      if(res.data.data.user.roles === "admin" || res.data.data.user.roles === "moderator"){
-         navigate("/dashboard")
+      e.target.reset();
+
+      if (
+        res.data.data.user.roles === "admin" ||
+        res.data.data.user.roles === "moderator"
+      ) {
+        toast.success("admin/moderator logged in successfully");
+        navigate("/dashboard");
       }
-      if(res.data.data.user.roles === "user"){
-        alert("user logged in successfully")
-        navigate("/login")
+      if (res.data.data.user.roles === "user") {
+        toast.success("user logged in successfully");
+        navigate("/unauthorized");
       }
-
-      
     } catch (error) {
       console.log(error);
-      
-      setShowMsg(error.response?.data?.message || "Login failed")
+
+      setShowMsg(error.response?.data?.message || "Login failed");
     }
-  }
+  };
 
   return (
-<div className="login text-white w-full min-h-screen flex justify-center items-center select-none">
-      
-      <form onSubmit={(e) => handleSubmit(e)} action="" className="rounded-md w-100 h-auto p-3 border">
-        <div>
-            <h1 className="text-2xl tracking-tighter">Login Account</h1>
-        </div>
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl font-bold text-center">
+            Welcome back
+          </CardTitle>
+          <CardDescription className="text-center">
+            Enter your credentials to access your account
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={(e) => handleSubmit(e)} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="Enter your email"
+                required
+              />
+            </div>
 
-        <div className="my-2">
-            <label htmlFor="">Email</label>
-            <input name="email" type="email"className="w-full rounded-md outline-0 border px-2 py-1" placeholder="example@gmail.com"/>
-        </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                autoComplete="off"
+                autoCorrect="off"
+                spellCheck="false"
+                placeholder="Enter your password"
+                required
+              />
+            </div>
 
-        <div className="my-2">
-            <label htmlFor="">Password</label>
-            <input name="password" type="password"className="w-full rounded-md outline-0 border px-2 py-1" placeholder="•••••••••" />
-        </div>
+            <div className="flex justify-end">
+              <a
+                href="/forgot-password"
+                className="text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+              >
+                Forgot password?
+              </a>
+            </div>
 
-        <div className="my-2 mt-3">
-            <a href="/forgot-password" className="cursor-pointer ">Forgot Password ?</a>
-        </div>
+            {showMsg && (
+              <Alert className="border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-900/20">
+                <AlertDescription className="text-yellow-800 dark:text-yellow-200">
+                  {showMsg}
+                </AlertDescription>
+              </Alert>
+            )}
 
-         {
-          showMsg ? 
-          <p className="text-yellow-300 mb-2 text-sm">
-            {showMsg}
-          </p> 
-          :
-          null
-        }
+            <Button type="submit" className="w-full" size="lg">
+              Sign In
+            </Button>
 
-        <button type="submit" className="w-full border rounded-md mt-5 text-[18px] cursor-pointer py-2 active:scale-[0.9] duration-200">Login Account</button>
+            <div className="text-center text-sm">
+              <span className="text-gray-600 dark:text-gray-400">
+                Don't have an account?{" "}
+              </span>
+              <a
+                href="/"
+                className="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 font-medium transition-colors"
+              >
+                Sign up
+              </a>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
 
-        <div className="my-2 mt-3 flex justify-center ">
-            <a href="/" className="cursor-pointer ">Don't have an account ? Register</a>
-        </div>
-
-      </form>
-
-</div>
-  )
-}
-
-export default Login
+export default Login;

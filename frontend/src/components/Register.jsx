@@ -2,6 +2,11 @@ import { useState } from "react";
 import axios from "axios"
 import { useNavigate } from "react-router-dom";
 import backendUrl from "./BackendUrl";
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 
 const Register = () => {
@@ -45,65 +50,99 @@ const Register = () => {
 
         const res = await axios.post(`${backendUrl}/api/register` , {fullName, email, password}, {withCredentials: true})
 
-        // console.log("response : ", res.data);
-
-        setShowMsg("user registered successfully")
+        setShowMsg(res.data.message || "Account created successfully")
 
         e.target.reset()
-        navigate("/");
+        navigate("/login");
         
       } catch (error) {
         setShowMsg(error.response?.data?.message || "Registration failed")
       }  
   }
 
-  
+
   return (
-    <div className="register text-white w-full min-h-screen flex justify-center items-center select-none">
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl font-bold text-center">Create Account</CardTitle>
+          <CardDescription className="text-center">
+            Enter your details to get started
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={(e) => handleSubmit(e)} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="fullName">Full Name</Label>
+              <Input
+                id="fullName"
+                name="fullName"
+                type="text"
+                placeholder="Enter your full name"
+                required
+              />
+            </div>
 
-      <form onSubmit={(e) => handleSubmit(e)} className="rounded-md w-100 h-auto p-3 border">
-        <div>
-            <h1 className="text-2xl tracking-tighter">Create Account</h1>
-            <h1 className="my-1 mb-3 tracking-tight text-gray-300">Enter your details to create your account</h1>
-        </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                placeholder="Enter your email"
+                required
+              />
+            </div>
 
-        <div className="my-2">
-            <label htmlFor="">FullName</label>
-            <input name="fullName" type="text"className="w-full rounded-md outline-0 border px-2 py-1" placeholder="John bhai" />
-        </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                autoComplete="new-password"
+                placeholder="Create a password"
+                required
+              />
+            </div>
 
-        <div className="my-2">
-            <label htmlFor="">Email</label>
-            <input name="email" type="email"className="w-full rounded-md outline-0 border px-2 py-1" placeholder="example@gmail.com"/>
-        </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                autoComplete="new-password"
+                placeholder="Confirm your password"
+                required
+              />
+            </div>
 
-        <div className="my-2">
-            <label htmlFor="">Password</label>
-            <input name="password" type="password"className="w-full rounded-md outline-0 border px-2 py-1" placeholder="•••••••••" />
-        </div>
+            {showMsg && (
+              <Alert className="border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-900/20">
+                <AlertDescription className="text-yellow-800 dark:text-yellow-200">
+                  {showMsg}
+                </AlertDescription>
+              </Alert>
+            )}
 
-        <div className="my-2">
-            <label htmlFor="">Confirm Password</label>
-            <input name="confirmPassword" type="password"className="w-full rounded-md outline-0 border px-2 py-1" placeholder="•••••••••"/>
-        </div>
+            <Button type="submit" className="w-full" size="lg">
+              Create Account
+            </Button>
 
-        {
-          showMsg ? 
-          <p className="text-yellow-300 mb-2 text-sm">
-            {showMsg}
-          </p> 
-          :
-          null
-        }
-
-        <button type="submit" className="w-full border rounded-md mt-5 text-[18px] cursor-pointer py-2 active:scale-[0.9] duration-200">Create Account</button>
-
-        <div className="my-2 mt-3 flex justify-center ">
-            <a href="/login" className="cursor-pointer ">Already have an account ? Login</a>
-        </div>
-
-      </form>
-
+            <div className="text-center text-sm">
+              <span className="text-gray-600 dark:text-gray-400">Already have an account? </span>
+              <a
+                href="/login"
+                className="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 font-medium transition-colors"
+              >
+                Sign in
+              </a>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   )
 }

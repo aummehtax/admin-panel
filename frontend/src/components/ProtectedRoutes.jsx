@@ -3,9 +3,10 @@ import React from 'react'
 import { useEffect } from 'react'
 import { useState } from 'react'
 import backendUrl from './BackendUrl'
-import { Navigate } from 'react-router-dom'
+import { Navigate, Outlet } from "react-router-dom"
+import LoadingSpinner from './LoadingSpinner'
 
-const ProtectedRoutes = ({children , requiredRole}) => {  
+const ProtectedRoutes = ({requiredRole}) => {  
   const [isAuthenticated, setAuthenticated] = useState(null)
   const [userRole , setUserRole] = useState(null)
 
@@ -29,7 +30,7 @@ const ProtectedRoutes = ({children , requiredRole}) => {
 
 
   if(isAuthenticated === null){
-    return <div className="text-white text-center mt-10">Loading...</div>
+    return <LoadingSpinner message="Verifying access..." />
   }
 
   if(!isAuthenticated){
@@ -42,7 +43,7 @@ const ProtectedRoutes = ({children , requiredRole}) => {
   }
 
 
-  return children
+return <Outlet />;
 
 }
 

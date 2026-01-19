@@ -37,12 +37,13 @@ const registerUser = asyncHandler( async (req , res) => {
         throw new apiError(400, "user is already exists")
     }
 
+    const avatar= `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(fullName)}`
 
     const userCreated = await user.create({
         fullName,
         email,
         password,
-        avatar: "",
+        avatar,
         refreshToken: ""
     })
 

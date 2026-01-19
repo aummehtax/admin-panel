@@ -14,6 +14,8 @@ app.set('trust proxy', 1); // trust Vercel's proxy
 app.use(cors({
   origin: process.env.CORS_ORIGIN ,
   credentials: true,
+   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept", "Origin", "Access-Control-Allow-Origin"],
 }))
 
 app.use(express.json());

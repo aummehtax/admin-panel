@@ -1,240 +1,280 @@
-import { useEffect, useState } from "react"
-import DashboardReuse from "./DashboardReuse"
-import backendUrl from "./BackendUrl"
-import axios from "axios"
+import { useEffect, useState } from "react";
+import backendUrl from "./BackendUrl";
+import axios from "axios";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { toast } from "sonner";
 
 const Profile = () => {
+  let [file, setFile] = useState(null);
+  const [avatar, setAvatar] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [profileInfoResponse, setProfileInfoResponse] = useState([]);
 
-  let [file, setFile] = useState(null)
-  const [avatar, setAvatar] = useState("")
-  const [showMsg, setShowMsg] = useState("")
-  const [showMsgPass, setShowMsgPass] = useState("")
-  const [uploading, setUploading] = useState(false)
-  const [profileInfoResponse, setProfileInfoResponse] = useState([])
+  const [inputFullname, setInputFullname] = useState("");
+  const [inputEmail, setInputEmail] = useState("");
+  const [currentPass, setCurrentPass] = useState("");
+  const [newPass, setNewPass] = useState("");
+  const [confirmPass, setConfirmPass] = useState("");
 
-  const [inputFullname , setInputFullname] = useState("")
-  const [inputEmail , setInputEmail] = useState("")
-  const [currentPass, setCurrentPass] = useState("")  
-  const [newPass, setNewPass] = useState("")  
-  const [confirmPass, setConfirmPass] = useState("")  
+  const uploadImage = async (fileAsset) => {
+    if (!fileAsset) return null;
 
-
-  
-
-  const uploadImage = async(fileAsset) => {
-    if(!fileAsset) return null
-
-    setUploading(true)
+    setUploading(true);
     try {
-      const formData = new FormData()
-      formData.append("file" , fileAsset)
-      formData.append("upload_preset",  import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET)
+      const formData = new FormData();
+      formData.append("file", fileAsset);
+      formData.append(
+        "upload_preset",
+        import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET
+      );
 
-      const response = await axios.post(`https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`,formData)
-      console.log("cloudinary: ", response);
-      
-      
-      if(response.data.secure_url){
-        setShowMsg("Image uploaded successfully!")
-        return response.data.secure_url
+      const response = await axios.post(
+        `https://api.cloudinary.com/v1_1/${
+          import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
+        }/image/upload`,
+        formData
+      );
+
+      if (response.data.secure_url) {
+        toast.success("Image uploaded successfully!");
+        return response.data.secure_url;
       }
+    } catch {
+      toast.error("Failed to upload image");
+      return null;
+    } finally {
+      setUploading(false);
+    }
+  };
 
+  const fetchProfileData = async () => {
+    try {
+      const res = await axios.get(`${backendUrl}/api/profile`, {
+        withCredentials: true,
+      });
+      setProfileInfoResponse(res.data.data);
+      setInputFullname(res.data.data.fullName);
+      setInputEmail(res.data.data.email);
+      setAvatar(res.data.data.avatar);
+
+      toast.success(res.data.message);
     } catch (error) {
-      setShowMsg("Failed to upload image")
-      return null
+      toast.error(error.response?.data?.message || "something went wrong");
     }
-    finally{
-      setUploading(false)
-    }
-
-  }
-
-  const fetchProfileData = async() => {
-        try {
-          const res = await axios.get(`${backendUrl}/api/profile`,{withCredentials: true})
-          setProfileInfoResponse(res.data.data)
-          setInputFullname(res.data.data.fullName)
-          setInputEmail(res.data.data.email)
-          setAvatar(res.data.data.avatar)
-
-          setShowMsg(res.data.message)
-          
-        } catch (error) {
-          setShowMsg(error.response?.data?.message || "something went wrong")
-        }
-  }
+  };
 
   useEffect(() => {
-    fetchProfileData()
-  },[])
+    fetchProfileData();
+  }, []);
 
+  let handleSubmit = async (e) => {
+    e.preventDefault();
 
-  let handleSubmit = async(e) => {
-    e.preventDefault()
-
-    try { 
-      let cloudinaryUrl = avatar
+    try {
+      let cloudinaryUrl = avatar;
 
       //if user select file upload in cloudinary
-      if(file){
-         cloudinaryUrl = await uploadImage(file) 
-         if(!cloudinaryUrl){
-          setShowMsg("Failed to upload image. Please try again.")
-          return
-         }
+      if (file) {
+        cloudinaryUrl = await uploadImage(file);
+        if (!cloudinaryUrl) {
+          toast.error("Failed to upload image. Please try again.");
+          return;
+        }
       }
 
       //send data to backend
-      const res = await axios.post(`${backendUrl}/api/profile/update` , {cloudinaryUrl, inputFullname, inputEmail} , {withCredentials: true})
-      setShowMsg(res.data.message || "Profile update successfully")
-      setFile(null)
-      await fetchProfileData()
-
+      const res = await axios.post(
+        `${backendUrl}/api/profile/update`,
+        { cloudinaryUrl, inputFullname, inputEmail },
+        { withCredentials: true }
+      );
+      toast.success(res.data.message || "Profile update successfully");
+      setFile(null);
+      await fetchProfileData();
     } catch (error) {
-      setShowMsg(error.response?.data?.message || "Something went wrong")
+      toast.error(error.response?.data?.message || "Something went wrong");
     }
-  }
-
+  };
 
   //change password
 
-  let handleChangePassword = async(e) => {
-    e.preventDefault()
+  let handleChangePassword = async (e) => {
+    e.preventDefault();
 
-    if(!newPass || !confirmPass || !currentPass){
-        setShowMsgPass("Please fill all fields")
-        return
+    if (!newPass || !confirmPass || !currentPass) {
+      toast.error("Please fill all fields");
+      return;
     }
-    if(newPass !== confirmPass){
-        setShowMsgPass("Password do not match")
-        return
+    if (newPass !== confirmPass) {
+      toast.error("Password do not match");
+      return;
     }
-    if(newPass.length < 6){
-      setShowMsgPass("Password must be at least 6 characters")
-      return
+    if (newPass.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
     }
 
     try {
-      const res = await axios.post(`${backendUrl}/api/profile/changepassword` , {newPass, currentPass} , {withCredentials: true})
-      setShowMsgPass(res.data.message)
-
+      const res = await axios.post(
+        `${backendUrl}/api/profile/changepassword`,
+        { newPass, currentPass },
+        { withCredentials: true }
+      );
+      toast.success(res.data.message);
     } catch (error) {
-      setShowMsgPass(error.response?.data?.message || "something went wrong")
+      toast.error(error.response?.data?.message || "something went wrong");
     }
+  };
 
-  }
-  
   return (
-<div>
-        <DashboardReuse></DashboardReuse>
-<div className="data-panel select-none text-white w-[86.4%] max-h-[92.6vh] min-h-[92.6vh] absolute right-1  top-16 overflow-y-scroll p-3 px-80">
+    <div className="container mx-auto space-y-6 p-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>Profile Information</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Avatar Upload */}
+            <div className="flex items-center space-x-4">
+              <div className="relative">
+                <Avatar className="h-20 w-20">
+                  <AvatarImage
+                    src={avatar || profileInfoResponse?.avatar}
+                    alt="Profile"
+                  />
+                  <AvatarFallback>
+                    {profileInfoResponse?.fullName?.charAt(0).toUpperCase() ||
+                      "U"}
+                  </AvatarFallback>
+                </Avatar>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="secondary"
+                  className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full p-0"
+                >
+                  📷
+                </Button>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const selectedFile = e.target.files[0];
+                    if (selectedFile) {
+                      setFile(selectedFile);
+                      setAvatar(URL.createObjectURL(selectedFile));
+                    }
+                  }}
+                  className="absolute inset-0 opacity-0 cursor-pointer"
+                />
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm font-medium">Profile Picture</p>
+                <p className="text-xs text-muted-foreground">
+                  Click the camera icon to change your avatar
+                </p>
+              </div>
+            </div>
 
+            {/* Form Fields */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="fullname">Full Name</Label>
+                <Input
+                  id="fullname"
+                  value={inputFullname}
+                  onChange={(e) => setInputFullname(e.target.value)}
+                  type="text"
+                  placeholder="Enter your full name"
+                />
+              </div>
 
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  value={inputEmail}
+                  onChange={(e) => setInputEmail(e.target.value)}
+                  type="email"
+                  placeholder="Enter your email"
+                />
+              </div>
 
-<div className="profile-panel border mt-5 rounded-md p-3 h-auto w-full">
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="role">Role</Label>
+                <Input
+                  id="role"
+                  disabled
+                  value={profileInfoResponse?.roles || ""}
+                  type="text"
+                  className="bg-muted"
+                />
+              </div>
+            </div>
 
-<div className="absolute left-1/2">
-{
-  showMsg ? 
-  <p className="text-yellow-300 mb-2 text-sm mt-3 text-center">
-    {showMsg}
-  </p> 
-  :
-  null
-} 
-</div>
+            <Button type="submit" disabled={uploading}>
+              {uploading ? "Saving..." : "Save Changes"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
 
-  <h1 className="text-2xl tracking-tighter">Profile Information</h1>
-  
-  <form onSubmit={handleSubmit} className="mt-3 flex flex-col gap-5">
-    
-   <div className="flex gap-5 items-center ">
-     <img src={avatar || "https://res.cloudinary.com/aumcloud003/image/upload/v1765907546/Facebook_Default_Profile_ieizol.jpg"} alt="" className="circle w-40 h-40 rounded-full "/>
-    <button className="border relative h-8 rounded-md w-40 flex justify-center items-center">
-      <span className="absolute  pointer-events-none">Change Avatar</span>
-      <input type="file" accept="image/*" onChange={(e) => {
-        const selectedFile = e.target.files[0]
-        if(selectedFile){
-          setFile(selectedFile) //store actual file
-          setAvatar(URL.createObjectURL(selectedFile)) //store preview
-        }
-      }} className="absolute inset-0 opacity-0 cursor-pointer"/>
-    </button>
-   </div>
+      {/* Password Change Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Change Password</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleChangePassword} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="current-password">Current Password</Label>
+                <Input
+                  id="current-password"
+                  value={currentPass}
+                  onChange={(e) => setCurrentPass(e.target.value)}
+                  type="password"
+                  placeholder="Enter current password"
+                  autoComplete="off"
+                />
+              </div>
 
-    <div className="flex flex-col gap-2">
-       <div className="my-2">
-            <label htmlFor="">FullName</label>
-            <input value={inputFullname} onChange={(e) => setInputFullname(e.target.value)} type="text"className="w-full rounded-md outline-0 border px-2 py-1" />
-       </div>
+              <div className="space-y-2">
+                <Label htmlFor="new-password">New Password</Label>
+                <Input
+                  id="new-password"
+                  value={newPass}
+                  autoComplete="off"
+                  onChange={(e) => setNewPass(e.target.value)}
+                  type="password"
+                  placeholder="Enter new password"
+                />
+              </div>
 
-       <div className="my-2">
-            <label htmlFor="">Email</label>
-            <input value={inputEmail} onChange={(e) => setInputEmail(e.target.value)} type="email"className="w-full rounded-md outline-0 border px-2 py-1"  />
-       </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirm-password">Confirm New Password</Label>
+                <Input
+                  id="confirm-password"
+                  value={confirmPass}
+                  autoComplete="off"
+                  onChange={(e) => setConfirmPass(e.target.value)}
+                  type="password"
+                  placeholder="Confirm new password"
+                />
+              </div>
+            </div>
 
-       <div className="my-2">
-            <label htmlFor="">Role</label>
-            <input disabled value={profileInfoResponse?.roles || ""}  type="text"className="w-full rounded-md outline-0 border px-2 py-1"  />
-       </div>
-       
-      <div>
-         <button  type="submit" className="rounded-md px-3 py-1 border my-2 mt-4 cursor-pointer active:scale-[0.9] duration-200">
-          {uploading ? "Saving..." : "Save Changes"}
-         </button>
-      </div>
-    </div> 
-
-
-  </form>
-
-</div>
-
-
-
-<div className="password-panel border rounded-md p-3 h-auto w-full mt-13">
-<div className="absolute left-1/2">
-    {
-  showMsgPass ? 
-  <p className="text-yellow-300  text-sm mt-3 text-center">
-    {showMsgPass}
-  </p> 
-  :
-  null
-} 
-</div>
-  
-  <h1 className="text-2xl tracking-tighter">Change Password</h1>
-  
-  <form onSubmit={handleChangePassword} className="mt-3 flex flex-col gap-5">
-    <div className="flex flex-col gap-2">
-       <div className="my-2">
-            <label htmlFor="">Current Password</label>
-            <input value={currentPass} onChange={(e) => setCurrentPass(e.target.value)} type="password"className="w-full rounded-md outline-0 border px-2 py-1" />
-       </div>
-
-       <div className="my-2">
-            <label htmlFor="">New Password</label>
-            <input value={newPass} onChange={(e) => setNewPass(e.target.value)} type="password"className="w-full rounded-md outline-0 border px-2 py-1"  />
-       </div>
-
-       <div className="my-2">
-            <label htmlFor="">Confirm New Password</label>
-            <input value={confirmPass} onChange={(e) => setConfirmPass(e.target.value)} type="password"className="w-full rounded-md outline-0 border px-2 py-1"  />
-       </div>
-       
-       <div>
-       <button type="submit" className="rounded-md px-3 py-1 border my-2 mt-4 cursor-pointer active:scale-[0.9] duration-200">Save Changes</button>
-       </div>
+            <Button type="submit">Save Changes</Button>
+          </form>
+        </CardContent>
+      </Card>
     </div>
-  </form>
+  );
+};
 
-</div>
-
-</div>
-
-</div>
-  )
-}
-
-export default Profile
+export default Profile;
